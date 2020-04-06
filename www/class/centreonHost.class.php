@@ -881,7 +881,6 @@ class CentreonHost
             "toto"
         );
 
-
         $arr = array();
         $i = 0;
         if (!isset($_REQUEST['tpSelect']) && $hostId) {
@@ -894,7 +893,6 @@ class CentreonHost
             }
             while ($row = $stmt->fetch()) {
                 $arr[$i]['tpSelect_#index#'] = $row['host_tpl_id'];
-
 
                 // DEBUG
                 $centreonLog->insertLog(
