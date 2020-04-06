@@ -1,7 +1,8 @@
 <?php
+
 /*
- * Copyright 2005-2015 Centreon
- * Centreon is developped by : Julien Mathis and Romain Le Merlus under
+ * Copyright 2005-2020 Centreon
+ * Centreon is developed by : Julien Mathis and Romain Le Merlus under
  * GPL Licence 2.0.
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -97,6 +98,7 @@ class CentreonHost
         if ($exclude !== null) {
             $queryList .= 'AND host_id <> :exclude_id ';
         }
+
         $queryList .= 'ORDER BY host_name';
         $stmt = $this->db->prepare($queryList);
         $stmt->bindParam(':register', $hostType, PDO::PARAM_STR);
@@ -111,6 +113,16 @@ class CentreonHost
         while ($row = $stmt->fetch()) {
             $listHost[$row['host_id']] = $row['host_name'];
         }
+
+        // DEBUG
+        $countHost = count($listHost);
+        $centreonLog = new CentreonLog();
+        $centreonLog->insertLog(
+            2,
+            "host returned = " . $countHost
+        );
+        $centreonLog->insertLog(2, '');
+
         return $listHost;
     }
 
@@ -861,6 +873,15 @@ class CentreonHost
      */
     public function getTemplates($hostId = null)
     {
+
+        // DEBUG
+        $centreonLog = new CentreonLog();
+        $centreonLog->insertLog(
+            2,
+            "toto"
+        );
+
+
         $arr = array();
         $i = 0;
         if (!isset($_REQUEST['tpSelect']) && $hostId) {
@@ -873,12 +894,25 @@ class CentreonHost
             }
             while ($row = $stmt->fetch()) {
                 $arr[$i]['tpSelect_#index#'] = $row['host_tpl_id'];
+
+
+                // DEBUG
+                $centreonLog->insertLog(
+                    2,
+                    "row getTpl = " . $row['host_tpl_id']
+                );
                 $i++;
             }
         } else {
             if (isset($_REQUEST['tpSelect'])) {
                 foreach ($_REQUEST['tpSelect'] as $val) {
                     $arr[$i]['tpSelect_#index#'] = $val;
+
+                    // DEBUG
+                    $centreonLog->insertLog(
+                        2,
+                        "val getTpl = " . $val
+                    );
                     $i++;
                 }
             }

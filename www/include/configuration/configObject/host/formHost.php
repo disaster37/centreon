@@ -463,6 +463,7 @@ $cloneSetTemplate[] = $form->addElement(
     'tpSelect[#index#]',
     '',
     (array(null => null) + $hostObj->getList(false, true)),
+    //(array(null => null)),
     array(
         "id" => "tpSelect_#index#",
         "class" => "select2",
