@@ -82,6 +82,14 @@ class ApiReadMediaRepository implements ReadMediaRepositoryInterface
     /**
      * @inheritDoc
      */
+    public function existsByAccessGroups(int $mediaId, array $accessGroups): bool
+    {
+        throw new RepositoryException('Not yet implemented');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function findAll(): \Traversable&\Countable
     {
         $apiEndpoint = $this->router->generate('FindMedias');

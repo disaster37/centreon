@@ -51,7 +51,10 @@ services:
     Core\Media\Application\UseCase\DeleteMedia\DeleteMedia:
         arguments:
             $writeMediaRepository: '@Core\Media\Infrastructure\Repository\FileProxyWriteMediaRepository'
-            $storageEngine: '@Core\Common\Infrastructure\Repository\DataStorageObserver'
+            $readMediaRepository: '@Core\Media\Infrastructure\Repository\DbReadMediaRepository'
+
+    Core\Media\Application\UseCase\GetMedia\GetMedia:
+        arguments:
             $readMediaRepository: '@Core\Media\Infrastructure\Repository\DbReadMediaRepository'
 
     Core\Media\Infrastructure\Repository\ApiReadMediaRepository:

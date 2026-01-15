@@ -28,8 +28,9 @@ use Core\Application\Common\UseCase\ErrorResponse;
 use Core\Media\Application\Exception\MediaException;
 use Core\Media\Application\Repository\ReadMediaRepositoryInterface;
 use Core\Media\Application\Repository\WriteMediaRepositoryInterface;
+use Core\Security\AccessGroup\Application\Repository\ReadAccessGroupRepositoryInterface;
+use Core\Contact\Domain\AdminResolver;
 use Core\Application\Common\UseCase\PresenterInterface;
-use Centreon\Domain\Repository\Interfaces\DataStorageEngineInterface;
 use Centreon\Domain\Log\LoggerTrait;
 use Core\Application\Common\UseCase\NoContentResponse;
 use Core\Application\Common\UseCase\NotFoundResponse;
@@ -39,16 +40,18 @@ final class DeleteMedia
     use LoggerTrait;
 
     /*
-    * @param ReadMediaRepositoryInterface $readMediaRepository
-    * @param WriteMediaRepositoryInterface $writeMediaRepository
-    * @param DataStorageEngineInterface $storageEngine
-    * @param ContactInterface $user
-    */
+     * @param ReadAccessGroupRepositoryInterface $readAccessGroupRepository
+     * @param ReadMediaRepositoryInterface $readMediaRepository
+     * @param WriteMediaRepositoryInterface $writeMediaRepository
+     * @param ContactInterface $user
+     * @param AdminResolver $adminResolver
+     */
     public function __construct(
+        private readonly ReadAccessGroupRepositoryInterface $readAccessGroupRepository,
         private readonly ReadMediaRepositoryInterface $readMediaRepository,
         private readonly WriteMediaRepositoryInterface $writeMediaRepository,
-        private readonly DataStorageEngineInterface $storageEngine,
         private readonly ContactInterface $user,
+        private readonly AdminResolver $adminResolver,
     ) {
     }
 
@@ -59,7 +62,6 @@ final class DeleteMedia
     public function __invoke(int $mediaId, PresenterInterface $presenter): void
     {
         try {
-            
 
            $media = $this->readMediaRepository->findById($mediaId);
 
@@ -71,20 +73,15 @@ final class DeleteMedia
                 return;
             }
 
-            try {
-                $this->info("Delete media #{$mediaId}");
-                $this->writeMediaRepository->delete($media);
-            } catch (\Throwable $ex) {
-                $this->error("Rollback of 'Delete Media' transaction.");
-                $this->error($ex->getMessage());
+            
+            $this->info(message: "Delete media #{$mediaId}");
+            $this->writeMediaRepository->delete($media);
 
-                throw $ex;
-            }
             $presenter->setResponseStatus(new NoContentResponse());
             $this->info(
                 'Media deleted',
                 [
-                    'service_id' => $mediaId,
+                    'media_id' => $mediaId,
                     'user_id' => $this->user->getId(),
                 ]
             );
@@ -93,4 +90,5 @@ final class DeleteMedia
             $this->error($ex->getMessage(), ['trace' => $ex->getTraceAsString()]);
         }
     }
+
 }

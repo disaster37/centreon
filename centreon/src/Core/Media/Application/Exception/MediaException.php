@@ -101,4 +101,12 @@ class MediaException extends \Exception
     {
         return new self(_('This operation requires an admin user'));
     }
+
+    /**
+     * @return self
+     */
+    public static function errorWhileRetrieving(): self
+    {
+        return new self(_('Error while retrieving a media'));
+    }
 }

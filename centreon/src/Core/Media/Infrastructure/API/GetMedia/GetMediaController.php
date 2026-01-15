@@ -21,24 +21,36 @@
 
 declare(strict_types=1);
 
-namespace Core\Media\Infrastructure\API\DeleteMedia;
+namespace Core\Media\Infrastructure\API\GetMedia;
 
 use Centreon\Application\Controller\AbstractController;
-use Core\Media\Application\UseCase\DeleteMedia\DeleteMedia;
-use Core\Infrastructure\Common\Api\DefaultPresenter;
+use Core\Application\Common\UseCase\ResponseStatusInterface;
+use Core\Media\Application\UseCase\GetMedia\GetMedia;
+use Core\Infrastructure\Common\Api\StandardPresenter;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Core\Media\Infrastructure\Voters\MediaVoters;
+use Core\Media\Application\UseCase\GetMedia\GetMediaResponse;
 
-final class DeleteMediaController extends AbstractController
+
+
+final class GetMediaController extends AbstractController
 {
-    #[IsGranted(MediaVoters::DELETE_MEDIA, null, 'You are not allowed to delete media', Response::HTTP_FORBIDDEN)]
-    public function __invoke(DeleteMedia $useCase, DefaultPresenter $presenter, int $mediaId,): Response
-    {
+    public function __invoke(
+        int $mediaId,
+        GetMedia $useCase,
+        StandardPresenter $presenter,
+    ): Response {
         $this->denyAccessUnlessGrantedForApiConfiguration();
 
-        $useCase($mediaId, $presenter);
+        $response = $useCase($mediaId);
 
-        return $presenter->show();
+        if ($response instanceof ResponseStatusInterface) {
+            return $this->createResponse($response);
+        }
+
+        return JsonResponse::fromJsonString($presenter->present(
+            $response,
+            ['groups' => ['Media:Get']]
+        ));
     }
 }
