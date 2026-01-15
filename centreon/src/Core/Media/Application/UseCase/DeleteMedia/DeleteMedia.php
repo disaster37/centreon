@@ -28,8 +28,6 @@ use Core\Application\Common\UseCase\ErrorResponse;
 use Core\Media\Application\Exception\MediaException;
 use Core\Media\Application\Repository\ReadMediaRepositoryInterface;
 use Core\Media\Application\Repository\WriteMediaRepositoryInterface;
-use Core\Security\AccessGroup\Application\Repository\ReadAccessGroupRepositoryInterface;
-use Core\Contact\Domain\AdminResolver;
 use Core\Application\Common\UseCase\PresenterInterface;
 use Centreon\Domain\Log\LoggerTrait;
 use Core\Application\Common\UseCase\NoContentResponse;
@@ -40,18 +38,14 @@ final class DeleteMedia
     use LoggerTrait;
 
     /*
-     * @param ReadAccessGroupRepositoryInterface $readAccessGroupRepository
      * @param ReadMediaRepositoryInterface $readMediaRepository
      * @param WriteMediaRepositoryInterface $writeMediaRepository
      * @param ContactInterface $user
-     * @param AdminResolver $adminResolver
      */
     public function __construct(
-        private readonly ReadAccessGroupRepositoryInterface $readAccessGroupRepository,
         private readonly ReadMediaRepositoryInterface $readMediaRepository,
         private readonly WriteMediaRepositoryInterface $writeMediaRepository,
         private readonly ContactInterface $user,
-        private readonly AdminResolver $adminResolver,
     ) {
     }
 

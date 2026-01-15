@@ -27,8 +27,9 @@ use Centreon\Application\Controller\AbstractController;
 use Core\Media\Application\UseCase\DeleteMedia\DeleteMedia;
 use Core\Infrastructure\Common\Api\DefaultPresenter;
 use Symfony\Component\HttpFoundation\Response;
+use Core\Media\Infrastructure\API\Voters\MediaVoters;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Core\Media\Infrastructure\Voters\MediaVoters;
+
 
 final class DeleteMediaController extends AbstractController
 {
