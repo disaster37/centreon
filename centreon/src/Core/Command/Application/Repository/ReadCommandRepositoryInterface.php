@@ -53,6 +53,7 @@ interface ReadCommandRepositoryInterface
      */
     public function existsByIdAndCommandType(int $commandId, CommandType $commandType): bool;
 
+
     /**
      * Determine if a command exists by its name.
      *

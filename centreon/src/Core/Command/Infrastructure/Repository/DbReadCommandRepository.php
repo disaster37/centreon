@@ -121,6 +121,7 @@ class DbReadCommandRepository extends AbstractRepositoryRDB implements ReadComma
         return (bool) $statement->fetchColumn();
     }
 
+
     /**
      * @inheritDoc
      */
