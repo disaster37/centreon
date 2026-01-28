@@ -25,17 +25,20 @@ namespace Core\Command\Infrastructure\Repository;
 
 use Centreon\Domain\Contact\Interfaces\ContactInterface;
 use Centreon\Domain\Log\LoggerTrait;
-use Centreon\Domain\Repository\RepositoryException;
+use Core\Common\Domain\Exception\RepositoryException;
 use Centreon\Infrastructure\DatabaseConnection;
 use Core\ActionLog\Application\Repository\WriteActionLogRepositoryInterface;
 use Core\ActionLog\Domain\Model\ActionLog;
 use Core\Command\Application\Repository\WriteCommandRepositoryInterface;
+use Core\Command\Application\Repository\ReadCommandRepositoryInterface;
 use Core\Command\Domain\Model\Argument;
 use Core\Command\Domain\Model\CommandType;
 use Core\Command\Domain\Model\NewCommand;
+use Core\Command\Domain\Model\Command;
 use Core\Command\Infrastructure\Model\CommandTypeConverter;
 use Core\CommandMacro\Domain\Model\CommandMacroType;
 use Core\CommandMacro\Domain\Model\NewCommandMacro;
+use Core\CommandMacro\Domain\Model\CommandMacro;
 use Core\Common\Domain\TrimmedString;
 use Core\Common\Infrastructure\Repository\AbstractRepositoryRDB;
 
@@ -56,6 +59,7 @@ class DbWriteCommandActionLogRepository extends AbstractRepositoryRDB implements
 
     public function __construct(
         private readonly WriteCommandRepositoryInterface $writeCommandRepository,
+        private readonly ReadCommandRepositoryInterface $readCommandRepository,
         private readonly WriteActionLogRepositoryInterface $writeActionLogRepository,
         private readonly ContactInterface $contact,
         DatabaseConnection $db,
@@ -103,7 +107,7 @@ class DbWriteCommandActionLogRepository extends AbstractRepositoryRDB implements
      *
      * @return array<string, int|string>
      */
-    private function getCommandAsArray(NewCommand $command): array
+    private function getCommandAsArray(NewCommand|Command $command): array
     {
         $reflection = new \ReflectionClass($command);
         $properties = $reflection->getProperties();
@@ -156,7 +160,7 @@ class DbWriteCommandActionLogRepository extends AbstractRepositoryRDB implements
     private function getMacrosAsString(array $macros): string
     {
         $macros = array_map(
-            function (NewCommandMacro $macro): string {
+            function (NewCommandMacro|CommandMacro $macro): string {
                 $resourceType = $macro->getType() === CommandMacroType::Host
                     ? 'HOST'
                     : 'SERVICE';
@@ -172,5 +176,74 @@ class DbWriteCommandActionLogRepository extends AbstractRepositoryRDB implements
         }
 
         return $macrosAsString;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function delete(int $commandId): void {
+        try {
+            $command = $this->readCommandRepository->findById($commandId);
+            $this->writeCommandRepository->delete($commandId);
+
+            $actionLog = new ActionLog(
+                objectType: ActionLog::OBJECT_TYPE_COMMAND,
+                objectId: $commandId,
+                objectName: $command->getName(),
+                actionType: ActionLog::ACTION_TYPE_DELETE,
+                contactId: $this->contact->getId()
+            );
+
+            $actionLogId = $this->writeActionLogRepository->addAction($actionLog);
+            if ($actionLogId === 0) {
+                throw new RepositoryException('Action Log ID cannot be 0');
+            }
+            $actionLog->setId($actionLogId);
+
+            $this->writeActionLogRepository->addActionDetails($actionLog, $this->getCommandAsArray($command));
+
+            return;
+        } catch (\Throwable $ex) {
+            $this->error(
+                'Error while deleteing a Command',
+                ['command' => $command->getName(), 'trace' => $ex->getTraceAsString()]
+            );
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function update(Command $originalCommand, Command $updatedCommand): void {
+        try {
+            $this->writeCommandRepository->update($originalCommand, $updatedCommand);
+
+            $actionLog = new ActionLog(
+                objectType: ActionLog::OBJECT_TYPE_COMMAND,
+                objectId: $originalCommand->getId(),
+                objectName: $originalCommand->getName(),
+                actionType: ActionLog::ACTION_TYPE_CHANGE,
+                contactId: $this->contact->getId()
+            );
+
+            $actionLogId = $this->writeActionLogRepository->addAction($actionLog);
+            if ($actionLogId === 0) {
+                throw new RepositoryException('Action Log ID cannot be 0');
+            }
+            $actionLog->setId($actionLogId);
+
+            $this->writeActionLogRepository->addActionDetails($actionLog, $this->getCommandAsArray($updatedCommand));
+
+            return;
+        } catch (\Throwable $ex) {
+            $this->error(
+                'Error while updating a Command',
+                ['command' => $originalCommand->getName(), 'trace' => $ex->getTraceAsString()]
+            );
+
+            throw $ex;
+        }
     }
 }

@@ -60,6 +60,14 @@ class MediaException extends \Exception
     /**
      * @return self
      */
+    public static function errorWhileDeletingMedia(): self
+    {
+        return new self(_('Error while deleting a media'));
+    }
+
+    /**
+     * @return self
+     */
     public static function errorWhileSearchingForMedias(): self
     {
         return new self(_('Error while searching for media'));
@@ -92,5 +100,13 @@ class MediaException extends \Exception
     public static function operationRequiresAdminUser(): self
     {
         return new self(_('This operation requires an admin user'));
+    }
+
+    /**
+     * @return self
+     */
+    public static function errorWhileRetrieving(): self
+    {
+        return new self(_('Error while retrieving a media'));
     }
 }

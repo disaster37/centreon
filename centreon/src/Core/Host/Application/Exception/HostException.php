@@ -35,6 +35,14 @@ class HostException extends \Exception
         return new self(_('You are not allowed to access hosts in the real time context'));
     }
 
+       /**
+     * @return self
+     */
+    public static function accessNotAllowed(): self
+    {
+        return new self(_('You are not allowed to access hosts'));
+    }
+
     /**
      * @return self
      */
