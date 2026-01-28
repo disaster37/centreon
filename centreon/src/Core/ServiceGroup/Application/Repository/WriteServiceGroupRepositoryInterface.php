@@ -25,6 +25,7 @@ namespace Core\ServiceGroup\Application\Repository;
 
 use Core\ServiceGroup\Domain\Model\NewServiceGroup;
 use Core\ServiceGroup\Domain\Model\ServiceGroupRelation;
+use Core\ServiceGroup\Domain\Model\ServiceGroup;
 
 interface WriteServiceGroupRepositoryInterface
 {
@@ -61,4 +62,13 @@ interface WriteServiceGroupRepositoryInterface
      * @throws \Throwable
      */
     public function unlink(array $serviceGroupRelations): void;
+
+     /**
+     * @param ServiceGroup $ServiceGroup
+     *
+     * @throws \Throwable
+     *
+     * @return void
+     */
+    public function update(ServiceGroup $ServiceGroup): void;
 }
