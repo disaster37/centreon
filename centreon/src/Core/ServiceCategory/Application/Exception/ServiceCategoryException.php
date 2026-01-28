@@ -96,6 +96,14 @@ class ServiceCategoryException extends \Exception
     }
 
     /**
+     * @return self
+     */
+    public static function errorWhileRetrieving(): self
+    {
+        return new self(_('Error while retrieving service category'));
+    }
+
+    /**
      * @param \Throwable $exception
      *
      * @return ServiceCategoryException
